@@ -1,0 +1,1 @@
+{"Modules":[{"Key":"","Source":"","Dir":"."},{"Key":"api_bindings","Source":"registry.terraform.io/terraform-aws-modules/apigateway-v2/aws//modules/http-lambda","Version":"5.3.1","Dir":".terraform/modules/api_bindings/modules/http-lambda"}]}
