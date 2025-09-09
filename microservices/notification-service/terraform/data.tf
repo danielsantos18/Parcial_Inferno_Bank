@@ -1,9 +1,15 @@
+# ====================================
+# Empaquetar el JAR del user-service para Lambda
+# ====================================
 data "archive_file" "lambda_user_create_file" {
   type        = "zip"
-  source_file = "${path.module}./target/user-service-0.0.1-SNAPSHOT.jar"
+  source_file = "${path.module}/../target/user-service-lambda-jar-with-dependencies.jar"
   output_path = "${path.module}/${var.register_user_lambda_file_name}"
 }
 
+# ====================================
+# IAM Policies
+# ====================================
 data "aws_iam_policy_document" "assume_role" {
   statement {
     effect = "Allow"
@@ -11,7 +17,7 @@ data "aws_iam_policy_document" "assume_role" {
       "sts:AssumeRole"
     ]
     principals {
-      type = "Service"
+      type        = "Service"
       identifiers = ["lambda.amazonaws.com"]
     }
   }
