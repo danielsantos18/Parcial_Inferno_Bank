@@ -188,7 +188,7 @@ resource "aws_lambda_function" "card_approval_worker" {
 
   environment {
     variables = {
-      USER_SERVICE_URL = "https://imjygkm24m.execute-api.us-east-2.amazonaws.com"
+      USER_SERVICE_URL = "https://v7hjhcn0ej.execute-api.us-east-2.amazonaws.com"
     }
   }
 }
@@ -355,3 +355,103 @@ resource "aws_api_gateway_stage" "CardActivateApiStage" {
 output "card_activate_endpoint" {
   value = "${aws_api_gateway_stage.CardActivateApiStage.invoke_url}/card/activate"
 }
+
+# Lambda para Purchase
+resource "aws_lambda_function" "card_purchase_lambda" {
+  function_name    = "card-purchase-lambda"
+  handler          = "com.inferno.card_service.handler.CardPurchaseLambda::handleRequest"
+  runtime          = "java17"
+  role             = aws_iam_role.lambda_role.arn
+  filename         = "${path.module}/../target/card-service-lambda-jar-with-dependencies.jar"
+  source_code_hash = filebase64sha256("${path.module}/../target/card-service-lambda-jar-with-dependencies.jar")
+  memory_size      = 512
+  timeout          = 30
+}
+
+# Lambda para SaveTransaction
+resource "aws_lambda_function" "card_transaction_save_lambda" {
+  function_name    = "card-transaction-save-lambda"
+  handler          = "com.inferno.card_service.handler.CardTransactionSaveLambda::handleRequest"
+  runtime          = "java17"
+  role             = aws_iam_role.lambda_role.arn
+  filename         = "${path.module}/../target/card-service-lambda-jar-with-dependencies.jar"
+  source_code_hash = filebase64sha256("${path.module}/../target/card-service-lambda-jar-with-dependencies.jar")
+  memory_size      = 512
+  timeout          = 30
+}
+
+# Lambda para PayCard
+resource "aws_lambda_function" "card_paid_credit_card_lambda" {
+  function_name    = "card-paid-credit-card-lambda"
+  handler          = "com.inferno.card_service.handler.CardPaidCreditCardLambda::handleRequest"
+  runtime          = "java17"
+  role             = aws_iam_role.lambda_role.arn
+  filename         = "${path.module}/../target/card-service-lambda-jar-with-dependencies.jar"
+  source_code_hash = filebase64sha256("${path.module}/../target/card-service-lambda-jar-with-dependencies.jar")
+  memory_size      = 512
+  timeout          = 30
+}
+
+# Lambda para GetReport
+resource "aws_lambda_function" "card_get_report_lambda" {
+  function_name    = "card-get-report-lambda"
+  handler          = "com.inferno.card_service.handler.CardGetReportLambda::handleRequest"
+  runtime          = "java17"
+  role             = aws_iam_role.lambda_role.arn
+  filename         = "${path.module}/../target/card-service-lambda-jar-with-dependencies.jar"
+  source_code_hash = filebase64sha256("${path.module}/../target/card-service-lambda-jar-with-dependencies.jar")
+  memory_size      = 512
+  timeout          = 30
+}
+# -------------------------
+# API Gateway - Purchase
+# -------------------------
+resource "aws_api_gateway_resource" "PurchaseResource" {
+  rest_api_id = aws_api_gateway_rest_api.CardCreateApi.id
+  parent_id   = aws_api_gateway_rest_api.CardCreateApi.root_resource_id
+  path_part   = "purchase"
+}
+
+resource "aws_api_gateway_method" "PurchaseMethod" {
+  rest_api_id   = aws_api_gateway_rest_api.CardCreateApi.id
+  resource_id   = aws_api_gateway_resource.PurchaseResource.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "PurchaseIntegration" {
+  rest_api_id             = aws_api_gateway_rest_api.CardCreateApi.id
+  resource_id             = aws_api_gateway_resource.PurchaseResource.id
+  http_method             = aws_api_gateway_method.PurchaseMethod.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.card_purchase_lambda.invoke_arn
+
+}
+
+resource "aws_lambda_permission" "ApiGwPurchase" {
+  statement_id  = "AllowExecutionFromAPIGatewayPurchase"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.card_purchase_lambda.function_name
+
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.CardCreateApi.execution_arn}/*/*"
+}
+# ======================= OUTPUTS NUEVOS =======================
+
+output "purchase_endpoint" {
+  value = "${aws_api_gateway_stage.CardCreateApiStage.invoke_url}/purchase"
+}
+
+output "transaction_endpoint" {
+  value = "${aws_api_gateway_stage.CardCreateApiStage.invoke_url}/transaction"
+}
+
+output "pay_endpoint" {
+  value = "${aws_api_gateway_stage.CardCreateApiStage.invoke_url}/pay"
+}
+
+output "report_endpoint" {
+  value = "${aws_api_gateway_stage.CardCreateApiStage.invoke_url}/report"
+}
+

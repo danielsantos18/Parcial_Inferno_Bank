@@ -170,4 +170,29 @@ public class CardService {
         logger.info("Activated " + activatedCount + " cards for user: " + userId);
         return activatedCount;
     }
+
+    // === Métodos para transacciones y pagos ===
+
+    public void purchase(String cardId) {
+        logger.info("Purchase executed for card " + cardId);
+        // TODO: lógica de compra (validar saldo, descontar, guardar transacción en
+        // DynamoDB)
+    }
+
+    public void saveTransaction(String cardId) {
+        logger.info("Transaction saved for card " + cardId);
+        // TODO: lógica para guardar transacción en DynamoDB
+    }
+
+    public void payCard(String cardId) {
+        logger.info("Card " + cardId + " marked as paid.");
+        // TODO: lógica para registrar pago en DynamoDB
+    }
+
+    public String getCardReport(String cardId) {
+        logger.info("Generating report for card " + cardId);
+        return "Report for card " + cardId;
+        // TODO: devolver JSON o reporte real con info de tarjeta y transacciones
+    }
+
 }
