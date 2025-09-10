@@ -8,6 +8,8 @@ terraform {
   required_version = ">= 1.5.0"
 }
 
+
+
 # ====================================
 # Random ID para evitar colisiones en nombres de buckets
 # ====================================
@@ -20,7 +22,6 @@ resource "random_id" "bucket_id" {
 # ====================================
 resource "aws_s3_bucket" "AvatarBucket" {
   bucket = "inferno-notification-avatars-${random_id.bucket_id.hex}"
-  acl    = "private"
 }
 
 # ====================================
@@ -107,24 +108,21 @@ resource "aws_dynamodb_table" "NotificationTable" {
   }
 }
 
-# Lambda que procesa notificaciones
+# ====================================
+# Lambda que procesa notificaciones (desde S3)
+# ====================================
 resource "aws_lambda_function" "NotificationLambda" {
-  filename         = "../target/notification-service-0.0.1-SNAPSHOT.jar"
-  function_name    = "notification-lambda"
-  handler          = "com.inferno.notification_service.NotificationServiceApplication::handleRequest"
-  runtime          = "java17"
-  timeout          = 300
-  memory_size      = 256
-  role             = aws_iam_role.lambda_role.arn
-  source_code_hash = filebase64sha256("../target/notification-service-0.0.1-SNAPSHOT.jar")
+  function_name = "notification-lambda"
 
-  environment {
-    variables = {
-      NOTIFICATION_TABLE = aws_dynamodb_table.NotificationTable.name
-      NOTIFICATION_TOPIC = aws_sns_topic.NotificationTopic.arn
-      AVATAR_BUCKET      = aws_s3_bucket.AvatarBucket.bucket
-    }
-  }
+  # Aquí usamos el jar que ya subiste a S3
+  s3_bucket = "inferno-notification-templates"
+  s3_key    = "notification-service.jar"
+
+  handler     = "com.example.notification_service.notification_service.NotificationServiceTestApp::main"
+  runtime     = "java17"
+  timeout     = 300
+  memory_size = 512
+  role        = aws_iam_role.lambda_role.arn
 }
 
 # Permiso para que SNS invoque la Lambda

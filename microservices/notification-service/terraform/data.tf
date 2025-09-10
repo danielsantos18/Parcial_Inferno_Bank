@@ -3,9 +3,10 @@
 # ====================================
 data "archive_file" "lambda_user_create_file" {
   type        = "zip"
-  source_file = "${path.module}/../target/user-service-lambda-jar-with-dependencies.jar"
-  output_path = "${path.module}/${var.register_user_lambda_file_name}"
+  source_file = "../../user-service/target/user-service-lambda-jar-with-dependencies.jar"
+  output_path = "../../user-service/target/user-service-lambda.zip"
 }
+
 
 # ====================================
 # IAM Policies

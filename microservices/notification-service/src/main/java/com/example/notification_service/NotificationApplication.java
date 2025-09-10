@@ -1,12 +1,13 @@
-package com.inferno.notification_service;
+package com.example.notification_service;
+
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class NotificationServiceApplication {
+public class NotificationApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(NotificationServiceApplication.class, args);
+        SpringApplication.run(NotificationApplication.class, args);
     }
 }
